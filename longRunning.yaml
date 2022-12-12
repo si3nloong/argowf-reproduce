@@ -1,8 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  # generateName: retry-on-error-
-  name: long-running-process
+  name: long-running
 spec:
   entrypoint: go-container
   templates:

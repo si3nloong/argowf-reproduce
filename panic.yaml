@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  # generateName: retry-on-error-
+  name: panic
+spec:
+  entrypoint: container-panic
+  templates:
+    - name: container-panic
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      container:
+        image: ghcr.io/atlanhq/go-panic:latest
+        command: ["/bin/sh", "-c", "./main"]

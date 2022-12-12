@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  # generateName: retry-on-error-
+  name: long-running-process
+spec:
+  entrypoint: go-container
+  templates:
+    - name: go-container
+      inputs:
+        parameters:
+          - name: num-of-routine
+            value: "300"
+          - name: seconds
+            value: "60"
+      env:
+        - name: GOROUTINE
+          value: "{{inputs.parameters.num-of-routine}}"
+        - name: TIME_INTERVAL
+          value: "{{inputs.parameters.seconds}}"
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      container:
+        image: ghcr.io/atlanhq/go-lrp:latest
+        command: ["/bin/sh", "-c", "./main"]

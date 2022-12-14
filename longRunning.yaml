@@ -12,9 +12,13 @@ spec:
             value: "300"
           - name: seconds
             value: "60"
+          - name: stop-after-duration
+            value: "1h"
       env:
         - name: GOROUTINE
           value: "{{inputs.parameters.num-of-routine}}"
+        - name: STOP_AFTER
+          value: "{{inputs.parameters.stop-after-duration}}"
         - name: TIME_INTERVAL
           value: "{{inputs.parameters.seconds}}"
       retryStrategy:

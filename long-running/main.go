@@ -10,10 +10,20 @@ import (
 )
 
 func main() {
-
-	terminate := time.NewTicker(time.Hour * 1)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	value := os.Getenv("STOP_AFTER")
+	if value == "" {
+		value = "1h"
+	}
+
+	duration, err := time.ParseDuration(value)
+	if err != nil {
+		panic(err)
+	}
+
+	terminate := time.NewTicker(duration)
 	go func() {
 	loop:
 		for {

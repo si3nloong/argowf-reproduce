@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: long-running-panic
+spec:
+  entrypoint: go-container
+  synchronization:
+    mutex:
+      name: mutex-panic-wf
+  templates:
+    - name: go-container
+      inputs:
+        parameters:
+          - name: num-of-routine
+            value: "300"
+          - name: seconds
+            value: "60"
+          - name: stop-after-duration
+            value: "1h"
+      env:
+        - name: GOROUTINE
+          value: "{{inputs.parameters.num-of-routine}}"
+        - name: STOP_AFTER
+          value: "{{inputs.parameters.stop-after-duration}}"
+        - name: TIME_INTERVAL
+          value: "{{inputs.parameters.seconds}}"
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      container:
+        image: ghcr.io/atlanhq/go-run-panic:latest
+        command: ["/bin/sh", "-c", "./main"]

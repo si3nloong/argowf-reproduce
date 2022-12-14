@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: mutex-lock-memory-leak
+spec:
+  entrypoint: mutex-long-running-memory-leak
+  synchronization:
+    mutex:
+      name: mutex-wf
+  templates:
+    - name: mutex-long-running-memory-leak
+      dag:
+        tasks:
+          - name: long-running-process
+            template: mutex-lrp
+          - name: memory-leak
+            dependencies: 
+              - long-running-process
+            template: mutex-memory-leak
+
+    - name: mutex-lrp
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      container:
+        image: ghcr.io/atlanhq/go-lrp:latest
+        command: ["/bin/sh", "-c", "./main"]
+
+    - name: mutex-memory-leak
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      container:
+        image: ghcr.io/atlanhq/go-leak:latest
+        command: ["/bin/sh", "-c", "./main"]

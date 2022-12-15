@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: mutex-dead-lock
+spec:
+  synchronization:
+    mutex:
+      name: mutex-wf
+  templates:
+    - name: mutex-long-panic
+      dag:
+        tasks:
+          - name: long-running-process
+            template: mutex-lrp
+          - name: panic
+            dependencies: 
+              - long-running-process
+            template: mutex-panic
+
+    - name: mutex-lrp
+      synchronization:
+        mutex:
+          name: mutex-wf
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      arguments:
+        parameters:
+          - name:
+      container:
+        image: ghcr.io/atlanhq/go-lrp:latest
+        command: ["/bin/sh", "-c", "./main"]
+
+    - name: mutex-panic
+      synchronization:
+        mutex:
+          name: mutex-wf
+      retryStrategy:
+        limit: "5"
+        retryPolicy: "Always"
+      container:
+        image: ghcr.io/atlanhq/go-panic:latest
+        command: ["/bin/sh", "-c", "./main"]
+
